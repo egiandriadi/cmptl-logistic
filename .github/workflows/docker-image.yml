@@ -1,0 +1,92 @@
+## PIPELINES ##
+#on:
+#  pull_request:
+#    branches:
+##      - development
+
+env:
+  IMAGE_NAME: codebase-api-ekspedisi
+  HELMREPO: helm-chart-repository/codebase-api-service-ekspedisi
+  GITHUB_BRANCH: ${{ github.base_ref }}
+  TAG: ${{ github.base_ref }}-${{ github.run_number }}
+  
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_KEY }}
+
+      - name: Build Docker image
+
+        run: |
+          if [ "${{ env.GITHUB_BRANCH }}" == "main" ]; then
+            echo "production"
+            docker build -f Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}-prd:${{ env.TAG }} .
+          elif [ "${{ env.GITHUB_BRANCH }}" == "development" ]; then
+            echo "staging"
+            docker build -f Dockerfile.dev -t ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}-dev:${{ env.TAG }} .
+          else
+            echo "no env found"
+          fi
+
+      - name: Push Docker image
+
+        run: |
+          if [ "${{ env.GITHUB_BRANCH }}" == "main" ]; then
+            echo "production"
+            docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}-prd:${{ env.TAG }}
+          elif [ "${{ env.GITHUB_BRANCH }}" == "development" ]; then
+            echo "staging"
+            docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}-dev:${{ env.TAG }}
+          else
+            echo "no env found"
+          fi
+
+  deployment:
+    needs: build-image
+    name: "Update Docker image version"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        name: changing the deployment of git repo
+        with:
+          repository: ${{ env.HELMREPO }}
+          token: ${{ secrets.TOKEN }}
+          
+      - uses: actions/setup-go@v4
+      - name: modify the image
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+
+          if [ "${{ env.GITHUB_BRANCH }}" == "main" ]; then
+            
+            yq e -i '.image.repository = "'${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}-prd'"' values-prod.yaml
+            yq e -i '.image.tag = "'${{ env.TAG }}'"' values-sit.yaml
+
+            git add .
+            git commit -m 'Done by Github Actions with Image tag: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}-prd:${{ env.TAG }}'
+
+          elif [ "${{ env.GITHUB_BRANCH }}" == "development" ]; then
+            
+            yq e -i '.image.repository = "'${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}-dev'"' values-sit-new.yaml
+            yq e -i '.image.tag = "'${{ env.TAG }}'"' values-sit-new.yaml
+
+            git add .
+            git commit -m 'Done by Github Actions with Image tag: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}-stg:${{ env.TAG }}'
+
+          else
+
+            echo "no env found"
+
+          fi
+
+          git push

@@ -1,0 +1,1806 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model batch {
+  id                   Int                  @id @default(autoincrement())
+  uuid                 String               @db.VarChar(36)
+  created_by           String?              @db.VarChar(255)
+  updated_by           String?              @db.VarChar(255)
+  deleted_by           String?              @db.VarChar(255)
+  created_at           DateTime             @default(now()) @db.Timestamp(6)
+  updated_at           DateTime             @default(now()) @db.Timestamp(6)
+  deleted_at           DateTime?            @db.Timestamp(6)
+  file                 String?              @db.VarChar(255)
+  file_path            String?              @db.VarChar(255)
+  pickup_gudang_id     Int?
+  kendaraan_id         Int?
+  ekspedisi_id         Int?
+  user_id              Int?
+  layanan_ekspedisi_id Int?
+  metode_pembayaran_id Int?
+  type_input           String               @db.VarChar(20)
+  pickup_id            Int?
+  tanggal_pickup       DateTime             @db.Date
+  waktu_penjemputan    String               @db.VarChar(255)
+  type_pickup          batch_type_pickup    @default(PICKUP)
+  status               batch_status         @default(DRAFT)
+  is_assuransi         Int                  @default(0)
+  total_order          Int                  @default(0)
+  m_kendaraan          m_kendaraan?         @relation(fields: [kendaraan_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_2398ca22f1e07b6e07a7b323687")
+  layanan_ekspedisi    layanan_ekspedisi?   @relation(fields: [layanan_ekspedisi_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_2bbaf570aa153a1ac64cb30e8ad")
+  m_ekspedisi          m_ekspedisi?         @relation(fields: [ekspedisi_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_661d9b42696ce7d0b6ccc062d0d")
+  m_gudang             m_gudang?            @relation(fields: [pickup_gudang_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6e38cb7979e1b5944349d083cc5")
+  pickup               pickup?              @relation(fields: [pickup_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_8fba0e8a23844d62c8e8c135c42")
+  user                 user?                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_c5de4f8f1d8b18a74b5f0cfed54")
+  m_metode_pembayaran  m_metode_pembayaran? @relation(fields: [metode_pembayaran_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_cd1bed9f60e3598233e3e91ad04")
+  batch_tier_layanan   batch_tier_layanan[]
+  order                order[]
+  t_order_temporary    t_order_temporary[]
+
+  @@index([kendaraan_id], map: "FK_2398ca22f1e07b6e07a7b323687")
+  @@index([layanan_ekspedisi_id], map: "FK_2bbaf570aa153a1ac64cb30e8ad")
+  @@index([ekspedisi_id], map: "FK_661d9b42696ce7d0b6ccc062d0d")
+  @@index([pickup_gudang_id], map: "FK_6e38cb7979e1b5944349d083cc5")
+  @@index([pickup_id], map: "FK_8fba0e8a23844d62c8e8c135c42")
+  @@index([user_id], map: "FK_c5de4f8f1d8b18a74b5f0cfed54")
+  @@index([metode_pembayaran_id], map: "FK_cd1bed9f60e3598233e3e91ad04")
+  @@index([created_at], map: "IDX_a3917f3c644ac6859a53043a88")
+}
+
+model ekspedisi_log {
+  id                Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid              String    @unique(map: "ekspedisi_log_uuid_unique") @db.Char(36)
+  order_id          String?   @db.VarChar(255)
+  ekspedisi         String?   @db.VarChar(255)
+  airwaybill_number String?   @db.VarChar(255)
+  raw               String?   @db.Text
+  created_at        DateTime? @default(now()) @db.Timestamp(0)
+  created_by        String    @db.VarChar(255)
+  updated_at        DateTime? @default(now()) @db.Timestamp(0)
+  updated_by        String    @db.VarChar(255)
+
+  @@index([airwaybill_number])
+  @@index([ekspedisi, airwaybill_number])
+  @@index([order_id])
+}
+
+model faq {
+  id              Int          @id @default(autoincrement())
+  uuid            String       @db.VarChar(255)
+  created_by      String?      @db.VarChar(255)
+  updated_by      String?      @db.VarChar(255)
+  deleted_by      String?      @db.VarChar(255)
+  created_at      DateTime     @default(now()) @db.Timestamp(6)
+  updated_at      DateTime     @default(now()) @db.Timestamp(6)
+  deleted_at      DateTime?    @db.Timestamp(6)
+  faq_category_id Int
+  name            String       @db.VarChar(255)
+  sort            String       @db.VarChar(255)
+  description     String       @db.LongText
+  faq_category    faq_category @relation(fields: [faq_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_fd28d981389f8688ea9b9e33fcd")
+
+  @@index([faq_category_id], map: "FK_fd28d981389f8688ea9b9e33fcd")
+  @@index([created_at], map: "IDX_71139463ff3712f74f5cd6807e")
+}
+
+model faq_category {
+  id         Int       @id @default(autoincrement())
+  uuid       String    @db.VarChar(255)
+  created_by String?   @db.VarChar(255)
+  updated_by String?   @db.VarChar(255)
+  deleted_by String?   @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+  name       String    @db.VarChar(255)
+  sort       String    @db.VarChar(255)
+  faq        faq[]
+
+  @@index([created_at], map: "IDX_a6804950f3945d5156e40899bc")
+}
+
+model kabupaten {
+  id           Int    @id @default(autoincrement())
+  provinsi_id  Int
+  name         String @db.VarChar(255)
+  kode_wilayah String @db.VarChar(15)
+}
+
+model kabupaten_kota {
+  id           Int       @id
+  uuid         String    @unique(map: "kabupaten_kota_uuid_unique") @db.Char(36)
+  name         String?   @db.VarChar(255)
+  dati2        String?   @db.VarChar(255)
+  kode_wilayah String?   @unique(map: "unique_kabupaten_kota_kode_wilayah") @db.VarChar(255)
+  provinsi_id  Int?
+  provinsi     String    @db.VarChar(255)
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  created_by   String    @db.VarChar(255)
+  updated_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_by   String    @db.VarChar(255)
+}
+
+model knex_migrations {
+  id             Int       @id @default(autoincrement()) @db.UnsignedInt
+  name           String?   @db.VarChar(255)
+  batch          Int?
+  migration_time DateTime? @db.Timestamp(0)
+}
+
+model knex_migrations_lock {
+  index     Int  @id @default(autoincrement()) @db.UnsignedInt
+  is_locked Int?
+}
+
+model layanan_ekspedisi {
+  id                  Int                   @id @default(autoincrement())
+  uuid                String                @unique(map: "layanan_ekspedisi_uuid_unique") @db.VarChar(36)
+  created_by          String?               @db.VarChar(255)
+  updated_by          String?               @db.VarChar(255)
+  deleted_by          String?               @db.VarChar(255)
+  created_at          DateTime              @default(now()) @db.Timestamp(6)
+  updated_at          DateTime              @default(now()) @db.Timestamp(6)
+  deleted_at          DateTime?             @db.Timestamp(6)
+  nama                String                @db.VarChar(255)
+  ekspedisi_id        Int?
+  deskripsi           String?               @db.Text
+  code                String?               @db.VarChar(255)
+  estimasi_awal       Int?
+  estimasi_akhir      Int?
+  status              Int?                  @default(0)
+  file_ratecard       String?               @db.VarChar(255)
+  file_ooc            String?               @db.VarChar(255)
+  batch               batch[]
+  batch_tier_layanan  batch_tier_layanan[]
+  m_skema_perhitungan m_skema_perhitungan[]
+  m_tier_layanan      m_tier_layanan[]
+
+  @@index([created_at], map: "IDX_001c754f6669115c308f97da34")
+}
+
+model logistic {
+  id   Int    @id @default(autoincrement())
+  uuid String @db.VarChar(36)
+}
+
+model m_ekspedisi {
+  id                    Int                     @id @default(autoincrement())
+  created_by            String?                 @db.VarChar(255)
+  updated_by            String?                 @db.VarChar(255)
+  deleted_by            String?                 @db.VarChar(255)
+  created_at            DateTime                @default(now()) @db.Timestamp(6)
+  updated_at            DateTime                @default(now()) @db.Timestamp(6)
+  deleted_at            DateTime?               @db.Timestamp(6)
+  name                  String                  @db.VarChar(100)
+  description           String                  @db.Text
+  code                  String                  @db.VarChar(255)
+  logo                  String                  @db.VarChar(255)
+  logo_path             String                  @db.VarChar(255)
+  cost_cod              Int?
+  cost_retur            Int?
+  cashback              Int?
+  operational_support   String?                 @db.VarChar(255)
+  uuid                  String                  @db.VarChar(36)
+  status                Int
+  batch                 batch[]
+  batch_tier_layanan    batch_tier_layanan[]
+  m_ekspedisi_assuransi m_ekspedisi_assuransi[]
+  m_skema_perhitungan   m_skema_perhitungan[]
+  m_tier_layanan        m_tier_layanan[]
+  order                 order[]
+  order_recommendation  order_recommendation[]
+  t_batch_rekonsiliasi  t_batch_rekonsiliasi[]
+  t_batch_validation    t_batch_validation[]
+  user                  user[]
+
+  @@index([created_at], map: "IDX_f0c226ed39a63d75d1c66dacf1")
+}
+
+model m_faq {
+  id              Int            @id @default(autoincrement())
+  uuid            String         @db.VarChar(36)
+  created_by      String?        @db.VarChar(255)
+  updated_by      String?        @db.VarChar(255)
+  deleted_by      String?        @db.VarChar(255)
+  created_at      DateTime       @default(now()) @db.Timestamp(6)
+  updated_at      DateTime       @default(now()) @db.Timestamp(6)
+  deleted_at      DateTime?      @db.Timestamp(6)
+  faq_category_id Int
+  name            String         @db.VarChar(255)
+  sort            Int
+  description     String         @db.LongText
+  m_faq_category  m_faq_category @relation(fields: [faq_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_a381411cfa09531ca7107cb2af9")
+
+  @@index([faq_category_id], map: "FK_a381411cfa09531ca7107cb2af9")
+  @@index([created_at], map: "IDX_696f416a693eca1bd26ffa16d1")
+}
+
+model m_faq_category {
+  id         Int       @id @default(autoincrement())
+  uuid       String    @db.VarChar(36)
+  created_by String?   @db.VarChar(255)
+  updated_by String?   @db.VarChar(255)
+  deleted_by String?   @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+  name       String    @db.VarChar(255)
+  sort       Int
+  m_faq      m_faq[]
+
+  @@index([created_at], map: "IDX_113018352e14d7cf39acce36ed")
+}
+
+model m_group_status {
+  id                   Int                    @id @default(autoincrement()) @db.UnsignedInt
+  uuid                 String                 @unique(map: "m_group_status_uuid_unique") @db.Char(36)
+  name                 String                 @db.VarChar(255)
+  created_at           DateTime?              @default(now()) @db.Timestamp(0)
+  created_by           String                 @db.VarChar(255)
+  updated_at           DateTime?              @default(now()) @db.Timestamp(0)
+  updated_by           String                 @db.VarChar(255)
+  label                String?                @db.VarChar(100)
+  parent               Int?
+  sort                 Int?
+  m_group_status_order m_group_status_order[]
+
+  @@index([name], map: "status_name_idx")
+  @@index([parent], map: "status_parent_idx")
+}
+
+model m_group_status_order {
+  id              Int             @id @default(autoincrement()) @db.UnsignedInt
+  uuid            String          @unique(map: "m_group_status_order_uuid_unique") @db.Char(36)
+  created_at      DateTime?       @default(now()) @db.Timestamp(0)
+  created_by      String          @db.VarChar(255)
+  updated_at      DateTime?       @default(now()) @db.Timestamp(0)
+  updated_by      String          @db.VarChar(255)
+  group_status_id Int?            @db.UnsignedInt
+  status_id       Int?
+  m_group_status  m_group_status? @relation(fields: [group_status_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "m_group_status_order_group_status_id_foreign")
+  m_status_order  m_status_order? @relation(fields: [status_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "m_group_status_order_status_id_foreign")
+
+  @@index([group_status_id], map: "m_group_status_order_group_status_id_index")
+  @@index([status_id], map: "m_group_status_order_status_id_index")
+}
+
+model m_gudang {
+  id           Int        @id @default(autoincrement())
+  uuid         String     @db.VarChar(36)
+  created_by   String?    @db.VarChar(255)
+  updated_by   String?    @db.VarChar(255)
+  deleted_by   String?    @db.VarChar(255)
+  created_at   DateTime   @default(now()) @db.Timestamp(6)
+  updated_at   DateTime   @default(now()) @db.Timestamp(6)
+  deleted_at   DateTime?  @db.Timestamp(6)
+  name         String     @db.VarChar(255)
+  wilayah_id   Int?
+  name_pic     String     @db.VarChar(255)
+  alamat       String     @db.VarChar(255)
+  photo        String     @db.VarChar(255)
+  photo_path   String     @db.VarChar(255)
+  handpone_pic String     @db.VarChar(255)
+  is_default   Int        @db.TinyInt
+  batch        batch[]
+  m_wilayah    m_wilayah? @relation(fields: [wilayah_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([created_at], map: "IDX_99ed8cab465e232b75423111de")
+  @@index([wilayah_id], map: "m_gudang_wilayah_id_fkey")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model m_kabupaten_kota {
+  id           Int       @id @default(autoincrement())
+  uuid         String    @db.Char(36)
+  name         String?   @db.VarChar(255)
+  dati2        String?   @db.VarChar(255)
+  kode_wilayah String?   @db.VarChar(255)
+  provinsi_id  Int?
+  provinsi     String    @db.VarChar(255)
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  created_by   String    @db.VarChar(255)
+  updated_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_by   String    @db.VarChar(255)
+
+  @@index([kode_wilayah])
+  @@index([provinsi_id])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model m_kecamatan {
+  id                Int       @id @default(autoincrement())
+  uuid              String    @db.Char(36)
+  name              String?   @db.VarChar(255)
+  kode_wilayah      String?   @db.VarChar(255)
+  kabupaten_kota_id Int?
+  kabupaten_kota    String    @db.VarChar(255)
+  dati2             String?   @db.VarChar(255)
+  kode_pos          String?   @db.VarChar(255)
+  created_at        DateTime? @default(now()) @db.Timestamp(0)
+  created_by        String    @db.VarChar(255)
+  updated_at        DateTime? @default(now()) @db.Timestamp(0)
+  updated_by        String    @db.VarChar(255)
+
+  @@ignore
+}
+
+model m_kendaraan {
+  id         Int       @id @default(autoincrement())
+  uuid       String    @db.VarChar(36)
+  created_by String?   @db.VarChar(255)
+  updated_by String?   @db.VarChar(255)
+  deleted_by String?   @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+  nama       String    @db.VarChar(100)
+  icon       String    @db.VarChar(255)
+  icon_path  String    @db.VarChar(255)
+  batch      batch[]
+
+  @@index([created_at], map: "IDX_a1a02f037e86b1b121425916fe")
+}
+
+model m_metode_pembayaran {
+  id                  Int                   @id @default(autoincrement())
+  created_by          String?               @db.VarChar(255)
+  updated_by          String?               @db.VarChar(255)
+  deleted_by          String?               @db.VarChar(255)
+  created_at          DateTime              @default(now()) @db.Timestamp(6)
+  updated_at          DateTime              @default(now()) @db.Timestamp(6)
+  deleted_at          DateTime?             @db.Timestamp(6)
+  name                String                @db.VarChar(255)
+  uuid                String                @db.VarChar(36)
+  batch               batch[]
+  batch_tier_layanan  batch_tier_layanan[]
+  m_skema_perhitungan m_skema_perhitungan[]
+  m_tier_layanan      m_tier_layanan[]
+  order               order[]
+
+  @@index([created_at], map: "IDX_46e9e671f33b4fa2f27163f1af")
+}
+
+model m_ninja_city {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid       String    @unique(map: "m_ninja_city_uuid_unique") @db.Char(36)
+  name       String    @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  created_by String    @db.VarChar(255)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_by String    @db.VarChar(255)
+}
+
+model m_ninja_locations {
+  id           Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid         String?   @db.Char(36)
+  no           String?   @db.VarChar(255)
+  region       String?   @db.VarChar(255)
+  province     String?   @db.VarChar(255)
+  regency      String?   @db.VarChar(255)
+  district     String?   @db.VarChar(255)
+  l1_tiercode  String?   @db.VarChar(255)
+  l2_tiercode  String?   @db.VarChar(255)
+  city         String?   @db.VarChar(255)
+  zipcode      String?   @db.VarChar(100)
+  is_coveraged Boolean   @default(true)
+  created_at   DateTime? @db.Timestamp(0)
+  created_by   String?   @db.VarChar(255)
+  updated_at   DateTime? @db.Timestamp(0)
+  updated_by   String?   @db.VarChar(255)
+
+  @@index([province, regency, district])
+  @@index([zipcode])
+}
+
+model m_ninja_rate_card {
+  id               Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid             String    @unique(map: "m_ninja_rate_card_uuid_unique") @db.Char(36)
+  origin_city      String?   @db.VarChar(255)
+  destination_city String?   @db.VarChar(255)
+  services         String?   @db.VarChar(255)
+  amount           Float?    @db.Float
+  created_at       DateTime? @default(now()) @db.Timestamp(0)
+  created_by       String    @db.VarChar(255)
+  updated_at       DateTime? @default(now()) @db.Timestamp(0)
+  updated_by       String    @db.VarChar(255)
+
+  @@index([destination_city, origin_city, services])
+}
+
+model m_sap_locations {
+  id             Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid           String    @unique(map: "m_sap_location_uuid_unique") @db.Char(36)
+  m_wilayah_code String?   @db.VarChar(255)
+  branch_code    String?   @db.VarChar(10)
+  zone_code      String?   @db.VarChar(10)
+  province_name  String?   @db.VarChar(255)
+  province_code  String?   @db.VarChar(10)
+  city_name      String?   @db.VarChar(255)
+  city_code      String?   @db.VarChar(10)
+  district_name  String?   @db.VarChar(255)
+  district_code  String?   @db.VarChar(10)
+  zipcode        String?   @db.VarChar(100)
+  cod_coverage   Boolean?
+  created_at     DateTime? @default(now()) @db.Timestamp(0)
+  created_by     String?   @db.VarChar(255)
+  updated_at     DateTime? @updatedAt
+  updated_by     String?   @db.VarChar(255)
+
+  @@index([zipcode], map: "zipcode_idx")
+  @@index([m_wilayah_code], map: "m_wilayah_code_idx")
+}
+
+model m_pelanggan {
+  id             Int       @id @default(autoincrement())
+  uuid           String    @db.VarChar(36)
+  created_by     String?   @db.VarChar(255)
+  updated_by     String?   @db.VarChar(255)
+  deleted_by     String?   @db.VarChar(255)
+  created_at     DateTime  @default(now()) @db.Timestamp(6)
+  updated_at     DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at     DateTime? @db.Timestamp(6)
+  name           String    @db.VarChar(255)
+  no_hp          String    @db.VarChar(255)
+  alamat         String    @db.VarChar(255)
+  kecamatan_id   Int?
+  kabupaten_id   Int?
+  valid_whatsapp Int?      @default(0) @db.TinyInt
+  is_new         Int?      @default(0) @db.TinyInt
+  order          order[]
+
+  @@index([created_at], map: "IDX_9261f2773c4a3b3a3ce2cbf325")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model m_provinsi {
+  name         String @db.VarChar(255)
+  id           Int    @id @default(autoincrement())
+  kode_wilayah String @db.VarChar(15)
+}
+
+model m_status_order {
+  id                   Int                    @id @default(autoincrement())
+  created_by           String?                @db.VarChar(255)
+  updated_by           String?                @db.VarChar(255)
+  deleted_by           String?                @db.VarChar(255)
+  created_at           DateTime               @default(now()) @db.Timestamp(6)
+  updated_at           DateTime               @default(now()) @db.Timestamp(6)
+  deleted_at           DateTime?              @db.Timestamp(6)
+  name                 String                 @db.VarChar(255)
+  ekspedisi_code       String?                @db.VarChar(20)
+  uuid                 String                 @db.VarChar(36)
+  description          String?                @db.VarChar(255)
+  ekspedisi_id         Int?
+  m_group_status_order m_group_status_order[]
+  order                order[]
+
+  @@index([created_at], map: "IDX_93964e2a9ded3c8266fc37a652")
+  @@index([name, ekspedisi_code])
+}
+
+model m_village {
+  id         Int    @id @default(autoincrement())
+  wilayah_id Int
+  name       String @db.VarChar(255)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model m_wilayah {
+  id                Int        @id @default(autoincrement())
+  uuid              String     @db.Char(36)
+  name              String?    @db.VarChar(255)
+  kode_wilayah      String?    @db.VarChar(255)
+  kabupaten_kota_id Int?
+  kabupaten_kota    String     @db.VarChar(255)
+  dati2             String?    @db.VarChar(255)
+  kode_pos          String?    @db.VarChar(255)
+  created_at        DateTime?  @default(now()) @db.Timestamp(0)
+  created_by        String     @db.VarChar(255)
+  updated_at        DateTime?  @default(now()) @db.Timestamp(0)
+  updated_by        String     @db.VarChar(255)
+  m_gudang          m_gudang[]
+  order             order[]
+
+  @@index([kabupaten_kota_id], map: "m_kabupaten_kota_kabupaten_kota_id_fkey")
+  @@index([kode_pos])
+  @@index([kode_wilayah])
+}
+
+model menu {
+  id         Int          @id @default(autoincrement())
+  created_by String?      @db.VarChar(255)
+  updated_by String?      @db.VarChar(255)
+  deleted_by String?      @db.VarChar(255)
+  created_at DateTime     @default(now()) @db.Timestamp(6)
+  updated_at DateTime     @default(now()) @db.Timestamp(6)
+  deleted_at DateTime?    @db.Timestamp(6)
+  name       String       @db.VarChar(255)
+  path       String       @db.VarChar(255)
+  uuid       String       @db.VarChar(36)
+  permission permission[]
+
+  @@index([created_at], map: "IDX_f8ba56fe42dd88cc9f9f2e9163")
+  @@index([name])
+  @@index([path])
+  @@index([uuid])
+}
+
+model order {
+  id                   Int                   @id @default(autoincrement())
+  uuid                 String                @db.VarChar(36)
+  created_by           String?               @db.VarChar(255)
+  updated_by           String?               @db.VarChar(255)
+  deleted_by           String?               @db.VarChar(255)
+  created_at           DateTime              @default(now()) @db.Timestamp(6)
+  updated_at           DateTime              @default(now()) @db.Timestamp(6)
+  deleted_at           DateTime?             @db.Timestamp(6)
+  user_id              Int?
+  batch_id             Int?
+  status_order_id      Int?
+  tanggal_order        String                @db.VarChar(20)
+  nomor_order          String                @db.VarChar(255)
+  pelanggan_id         Int?
+  pelanggan_hp         String                @db.VarChar(255)
+  pelanggan_nama       String?               @db.VarChar(255)
+  pelanggan_alamat     String                @db.VarChar(255)
+  pelanggan_wilayah_id Int?
+  kode_pos             Int?
+  metode_pembayaran_id Int?
+  nilai_cod            Int?
+  nilai_barang         Int?
+  berat                Int?
+  jumlah               Int?
+  nama_paket           String                @db.VarChar(255)
+  catatan_pengiriman   String?               @db.VarChar(255)
+  status_import        String?               @default("SUCCESS") @db.VarChar(255)
+  check_raw            String?               @db.Text
+  nomor_resi           String?               @db.VarChar(45)
+  fee_cod              Float?                @db.Float
+  tarif                Float?                @db.Float
+  discount             Float?                @db.Float
+  fee_cod_pajak        Float?                @db.Float
+  tarif_pajak          Float?                @db.Float
+  errors               String?               @db.Text
+  ekspedisi_id         Int?
+  recommendation       String?               @db.Text
+  layanan_id           Int?
+  score_ekspedisi      Int                   @default(0)
+  score_pelanggan      Int                   @default(0)
+  isPrint              Int                   @default(0)
+  nilai_assuransi      Float                 @default(0) @db.Float
+  remark_1             String?               @db.VarChar(255)
+  remark_2             String?               @db.VarChar(255)
+  remark_3             String?               @db.VarChar(255)
+  rekonsiliasi_at      DateTime?             @db.DateTime(0)
+  disbursed_at         DateTime?             @db.Timestamp(0)
+  last_update          DateTime?             @db.Timestamp(0)
+  batch                batch?                @relation(fields: [batch_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_a8284166e97945cadd29d2ee69c")
+  m_ekspedisi          m_ekspedisi?          @relation(fields: [ekspedisi_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  m_metode_pembayaran  m_metode_pembayaran?  @relation(fields: [metode_pembayaran_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  m_pelanggan          m_pelanggan?          @relation(fields: [pelanggan_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  m_wilayah            m_wilayah?            @relation(fields: [pelanggan_wilayah_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  m_status_order       m_status_order?       @relation(fields: [status_order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user                 user?                 @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  order_recommendation order_recommendation?
+  t_failure_reasons    t_failure_reasons[]
+  t_klaim              t_klaim[]
+  t_order_temporary    t_order_temporary[]
+  t_order_tlc          t_order_tlc?
+  t_tagihan            t_tagihan[]
+  t_tiket              t_tiket[]
+  t_validation_klaim   t_validation_klaim[]
+
+  @@unique([nomor_resi, ekspedisi_id])
+  @@index([batch_id], map: "FK_a8284166e97945cadd29d2ee69c")
+  @@index([created_at], map: "IDX_e53d92730ba8bd3bd87e73b076")
+  @@index([ekspedisi_id], map: "order_ekspedisi_id_fkey")
+  @@index([metode_pembayaran_id], map: "order_metode_pembayaran_id_fkey")
+  @@index([pelanggan_id], map: "order_pelanggan_id_fkey")
+  @@index([pelanggan_wilayah_id], map: "order_pelanggan_wilayah_id_fkey")
+  @@index([status_order_id], map: "order_status_order_id_fkey")
+  @@index([user_id], map: "order_user_id_fkey")
+  @@index([created_by, status_order_id, updated_at(sort: Desc)], map: "user_status_update_idx")
+}
+
+model password_reset {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  email      String   @db.VarChar(150)
+  token      String   @db.VarChar(255)
+  created_at DateTime @db.Timestamp(0)
+  uuid       String   @db.VarChar(36)
+}
+
+model permission {
+  id               Int                @id @default(autoincrement())
+  uuid             String             @db.VarChar(36)
+  created_by       String?            @db.VarChar(255)
+  updated_by       String?            @db.VarChar(255)
+  deleted_by       String?            @db.VarChar(255)
+  created_at       DateTime           @default(now()) @db.Timestamp(6)
+  updated_at       DateTime           @default(now()) @db.Timestamp(6)
+  deleted_at       DateTime?          @db.Timestamp(6)
+  menu_id          Int?
+  method           String             @db.VarChar(255)
+  action           String?            @db.VarChar(255)
+  menu             menu?              @relation(fields: [menu_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_b4083bde507bb8b760a2aaf9c08")
+  roles_permission roles_permission[]
+
+  @@index([menu_id], map: "FK_b4083bde507bb8b760a2aaf9c08")
+  @@index([created_at], map: "IDX_65e763c3c5277240552d792d55")
+}
+
+model pickup {
+  id         Int       @id @default(autoincrement())
+  created_by String?   @db.VarChar(255)
+  updated_by String?   @db.VarChar(255)
+  deleted_by String?   @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+  name       String    @db.VarChar(255)
+  uuid       String    @db.VarChar(36)
+  batch      batch[]
+
+  @@index([created_at], map: "IDX_93b86fe0ec28787f5eb4fb3d0c")
+}
+
+model profile {
+  id                  Int       @id @default(autoincrement())
+  created_by          String?   @db.VarChar(255)
+  updated_by          String?   @db.VarChar(255)
+  deleted_by          String?   @db.VarChar(255)
+  created_at          DateTime  @default(now()) @db.Timestamp(6)
+  updated_at          DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at          DateTime? @db.Timestamp(6)
+  user_id             Int       @unique(map: "REL_d752442f45f258a8bdefeebb2f")
+  no_ktp              String    @db.VarChar(16)
+  photo               String    @db.VarChar(255)
+  photo_path          String    @db.VarChar(255)
+  upload_selfie       String?   @db.VarChar(255)
+  selfiePath          String?   @db.VarChar(255)
+  kabupaten_id        Int?
+  wilayah_id          Int?
+  village_id          Int?
+  is_draft            Int       @default(0) @db.TinyInt
+  is_verification     Int       @default(0) @db.TinyInt
+  provinsi_id         Int?
+  nama                String    @db.VarChar(255)
+  jenis_kelamin       Int       @db.TinyInt
+  alamat              String    @db.VarChar(255)
+  email               String    @db.VarChar(255)
+  handpone            String    @db.VarChar(255)
+  nama_bank           String    @db.VarChar(255)
+  bank_code           String?   @db.VarChar(45)
+  nomor_rekening      String    @db.VarChar(255)
+  pemilik_rekening    String    @db.VarChar(255)
+  photo_rekening      String    @db.VarChar(255)
+  photo_rekening_path String    @db.VarChar(255)
+  keterangan          String    @db.VarChar(255)
+  uuid                String    @db.VarChar(36)
+  photo_profile       String?   @db.VarChar(255)
+  photo_profile_path  String?   @db.VarChar(255)
+  user                user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_d752442f45f258a8bdefeebb2f2")
+
+  @@index([created_at], map: "IDX_0ed669a723a2a49942d30301a0")
+}
+
+model provinsi {
+  name         String @db.VarChar(255)
+  id           Int    @id @default(autoincrement())
+  kode_wilayah String @db.VarChar(15)
+}
+
+model roles {
+  id                                       Int                @id @default(autoincrement())
+  created_by                               String?            @db.VarChar(255)
+  updated_by                               String?            @db.VarChar(255)
+  deleted_by                               String?            @db.VarChar(255)
+  created_at                               DateTime           @default(now()) @db.Timestamp(6)
+  updated_at                               DateTime           @default(now()) @db.Timestamp(6)
+  deleted_at                               DateTime?          @db.Timestamp(6)
+  name                                     String             @db.VarChar(255)
+  rolesUserId                              Int?
+  uuid                                     String             @db.VarChar(36)
+  roles_user_roles_rolesUserIdToroles_user roles_user?        @relation("roles_rolesUserIdToroles_user", fields: [rolesUserId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_0c9862323481b15d1bd1848af45")
+  roles_permission                         roles_permission[]
+  roles_user_roles_user_roles_idToroles    roles_user[]       @relation("roles_user_roles_idToroles")
+
+  @@index([rolesUserId], map: "FK_0c9862323481b15d1bd1848af45")
+  @@index([created_at], map: "IDX_e5a52fc6f7a8dae64f645b0914")
+}
+
+model roles_permission {
+  id            Int         @id @default(autoincrement())
+  uuid          String      @db.VarChar(36)
+  created_by    String?     @db.VarChar(255)
+  updated_by    String?     @db.VarChar(255)
+  deleted_by    String?     @db.VarChar(255)
+  created_at    DateTime    @default(now()) @db.Timestamp(6)
+  updated_at    DateTime    @default(now()) @db.Timestamp(6)
+  deleted_at    DateTime?   @db.Timestamp(6)
+  roles_id      Int?
+  permission_id Int?
+  roles         roles?      @relation(fields: [roles_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_26091402a4217aa8a370ae4477d")
+  permission    permission? @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6146087c365cb4328a2d651ff91")
+
+  @@index([roles_id], map: "FK_26091402a4217aa8a370ae4477d")
+  @@index([permission_id], map: "FK_6146087c365cb4328a2d651ff91")
+  @@index([created_at], map: "IDX_fbee8012368195332f99f994cd")
+}
+
+model roles_user {
+  id                                  Int       @id @default(autoincrement())
+  created_by                          String?   @db.VarChar(255)
+  updated_by                          String?   @db.VarChar(255)
+  deleted_by                          String?   @db.VarChar(255)
+  created_at                          DateTime  @default(now()) @db.Timestamp(6)
+  updated_at                          DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at                          DateTime? @db.Timestamp(6)
+  roles_id                            Int
+  user_id                             Int
+  uuid                                String    @db.VarChar(36)
+  roles_roles_rolesUserIdToroles_user roles[]   @relation("roles_rolesUserIdToroles_user")
+  roles_roles_user_roles_idToroles    roles     @relation("roles_user_roles_idToroles", fields: [roles_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_45c45e4b496636f50c85e7e23d8")
+  user                                user[]
+
+  @@index([roles_id], map: "FK_45c45e4b496636f50c85e7e23d8")
+  @@index([created_at], map: "IDX_5dbfdebc39244176cf234a417e")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model t_batch_rekonsiliasi {
+  id                          Int                           @id @default(autoincrement())
+  uuid                        String                        @unique(map: "t_batch_rekonsiliasi_uuid_unique") @db.Char(36)
+  ekspedisi_id                Int
+  status_batch                Int?
+  created_at                  DateTime?                     @default(now()) @db.Timestamp(0)
+  created_by                  String                        @db.VarChar(255)
+  updated_at                  DateTime?                     @default(now()) @db.Timestamp(0)
+  updated_by                  String?                       @db.VarChar(255)
+  deleted_at                  DateTime?                     @db.Timestamp(0)
+  deleted_by                  String?                       @db.VarChar(255)
+  tanggal                     DateTime?                     @db.Timestamp(0)
+  nominal_transfer            Float?
+  m_ekspedisi                 m_ekspedisi                   @relation(fields: [ekspedisi_id], references: [id])
+  t_batch_rekonsiliasi_bukti  t_batch_rekonsiliasi_bukti[]
+  t_batch_rekonsiliasi_upload t_batch_rekonsiliasi_upload[]
+
+  @@index([ekspedisi_id], map: "t_batch_rekonsiliasi_ekspedisi_id_fkey")
+}
+
+model t_batch_rekonsiliasi_bukti {
+  id                    Int                  @id @default(autoincrement()) @db.UnsignedInt
+  uuid                  String               @unique(map: "t_batch_rekonsiliasi_bukti_uuid_unique") @db.Char(36)
+  batch_rekonsiliasi_id Int
+  url                   String?              @db.Text
+  created_at            DateTime?            @default(now()) @db.Timestamp(0)
+  created_by            String               @db.VarChar(255)
+  updated_at            DateTime?            @default(now()) @db.Timestamp(0)
+  updated_by            String?              @db.VarChar(255)
+  deleted_at            DateTime?            @default(now()) @db.Timestamp(0)
+  deleted_by            String?              @db.VarChar(255)
+  status                Int?
+  nominal               Int?                 @default(0)
+  t_batch_rekonsiliasi  t_batch_rekonsiliasi @relation(fields: [batch_rekonsiliasi_id], references: [id])
+
+  @@index([batch_rekonsiliasi_id], map: "t_batch_rekonsiliasi_bukti_batch_rekonsiliasi_id_fkey")
+}
+
+model t_batch_rekonsiliasi_upload {
+  id                    Int                  @id @default(autoincrement()) @db.UnsignedInt
+  uuid                  String               @unique(map: "t_batch_rekonsiliasi_upload_uuid_unique") @db.Char(36)
+  batch_rekonsiliasi_id Int
+  url                   String?              @db.Text
+  created_at            DateTime?            @default(now()) @db.Timestamp(0)
+  created_by            String?              @db.VarChar(255)
+  updated_at            DateTime?            @default(now()) @db.Timestamp(0)
+  updated_by            String?              @db.VarChar(255)
+  deleted_by            String?              @db.VarChar(255)
+  deleted_at            DateTime?            @db.Timestamp(0)
+  tanggal               DateTime?            @db.Timestamp(0)
+  url_path              String?              @db.Text
+  t_batch_rekonsiliasi  t_batch_rekonsiliasi @relation(fields: [batch_rekonsiliasi_id], references: [id])
+
+  @@index([batch_rekonsiliasi_id], map: "t_batch_rekonsiliasi_upload_batch_rekonsiliasi_id_fkey")
+}
+
+model t_batch_tagihan {
+  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid             String    @unique(map: "t_batch_tagihan_uuid_unique") @db.Char(36)
+  ekspedisi_id     Int?
+  status_batch     Int?      @default(0)
+  created_at       DateTime? @default(now()) @db.Timestamp(0)
+  created_by       String?   @db.VarChar(255)
+  updated_at       DateTime? @default(now()) @db.Timestamp(0)
+  updated_by       String?   @db.VarChar(255)
+  deleted_at       DateTime? @db.Timestamp(0)
+  deleted_by       String?   @db.VarChar(255)
+  nominal_transfer Float?
+}
+
+model t_batch_tagihan_bukti {
+  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid             String    @unique(map: "t_batch_tagihan_bukti_uuid_unique") @db.Char(36)
+  batch_tagihan_id BigInt?
+  url              String?   @db.Text
+  created_at       DateTime? @default(now()) @db.Timestamp(0)
+  created_by       String?   @db.VarChar(255)
+  updated_at       DateTime? @default(now()) @db.Timestamp(0)
+  updated_by       String?   @db.VarChar(255)
+  status           Int?
+  deleted_at       DateTime? @db.Timestamp(0)
+  deleted_by       String?   @db.VarChar(255)
+  nominal          Int?      @default(0)
+}
+
+model t_batch_tagihan_upload {
+  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid             String    @unique(map: "t_batch_tagihan_upload_uuid_unique") @db.Char(36)
+  batch_tagihan_id BigInt?
+  created_at       DateTime? @default(now()) @db.Timestamp(0)
+  created_by       String?   @db.VarChar(255)
+  updated_at       DateTime? @default(now()) @db.Timestamp(0)
+  updated_by       String?   @db.VarChar(255)
+  file_path        String?   @db.Text
+  url              String?   @db.Text
+  deleted_at       DateTime? @db.Timestamp(0)
+  deleted_by       String?   @db.VarChar(255)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model t_rekonsiliasi {
+  id                           Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid                         String    @unique(map: "t_rekonsiliasi_uuid_unique") @db.Char(36)
+  batch_rekonsiliasi_id        BigInt?
+  batch_rekonsiliasi_upload_id BigInt?
+  order_id                     BigInt?
+  nomor_resi                   String?   @db.VarChar(255)
+  nominal_ekspedisi            Float?
+  nominal_completed            Float?
+  status_rekonsiliasi          Int?
+  created_at                   DateTime? @default(now()) @db.Timestamp(0)
+  created_by                   String    @db.VarChar(255)
+  updated_at                   DateTime  @default(now()) @db.Timestamp(6)
+  updated_by                   String?   @db.VarChar(255)
+  deleted_at                   DateTime? @db.Timestamp(6)
+  deleted_by                   String?   @db.VarChar(255)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model t_tagihan {
+  id                      BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid                    String    @unique(map: "t_tagihan_uuid_unique") @db.Char(36)
+  batch_tagihan_id        BigInt?
+  batch_tagihan_upload_id BigInt?
+  type                    String?   @db.VarChar(100)
+  order_id                Int?
+  nominal_ekspedisi       Float?
+  nominal_completed       Float?
+  status_tagihan          Int?
+  created_at              DateTime? @default(now()) @db.Timestamp(0)
+  created_by              String?   @db.VarChar(255)
+  updated_at              DateTime? @default(now()) @db.Timestamp(0)
+  updated_by              String?   @db.VarChar(255)
+  deleted_at              DateTime? @db.Timestamp(0)
+  deleted_by              String?   @db.VarChar(255)
+  from_city               String?   @default("")
+  berat_completed         Int?
+  berat_ekspedisi         Int?
+  order                   order?    @relation(fields: [order_id], references: [id])
+
+  @@index([order_id], map: "t_tagihan_order_id_fkey")
+}
+
+model testimonial {
+  id          Int       @id @default(autoincrement())
+  created_by  String?   @db.VarChar(255)
+  updated_by  String?   @db.VarChar(255)
+  deleted_by  String?   @db.VarChar(255)
+  created_at  DateTime  @default(now()) @db.Timestamp(6)
+  updated_at  DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at  DateTime? @db.Timestamp(6)
+  name        String    @db.VarChar(255)
+  company     String    @db.VarChar(255)
+  testimonial String    @db.LongText
+  photo       String?   @db.VarChar(255)
+  photo_path  String?   @db.VarChar(255)
+  uuid        String    @db.VarChar(36)
+
+  @@index([created_at], map: "IDX_370d856b5a98269d84d84c755c")
+}
+
+model user {
+  id                  Int           @id @default(autoincrement())
+  created_by          String?       @db.VarChar(255)
+  updated_by          String?       @db.VarChar(255)
+  deleted_by          String?       @db.VarChar(255)
+  created_at          DateTime      @default(now()) @db.Timestamp(6)
+  updated_at          DateTime      @default(now()) @db.Timestamp(6)
+  deleted_at          DateTime?     @db.Timestamp(6)
+  name                String        @db.VarChar(150)
+  email               String        @db.VarChar(150)
+  mobile              String        @db.VarChar(30)
+  password            String        @db.VarChar(255)
+  refresh_token       String?       @db.LongText
+  is_active           Int           @default(0) @db.TinyInt
+  last_activity       DateTime      @default(now()) @db.Timestamp(6)
+  rolesUserId         Int?
+  uuid                String        @db.VarChar(36)
+  membership_id       Int?
+  pengiriman          Int           @default(0)
+  ekspedisi_id        Int?
+  updated_at_password DateTime?     @db.Timestamp(6)
+  batch               batch[]
+  order               order[]
+  profile             profile?
+  klaim               t_klaim[]
+  t_saldo             t_saldo[]
+  t_tiket             t_tiket[]
+  roles_user          roles_user?   @relation(fields: [rolesUserId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_2a4cd29d2da4aea6ab0df0696ee")
+  m_ekspedisi         m_ekspedisi?  @relation(fields: [ekspedisi_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  m_membership        m_membership? @relation(fields: [membership_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_membership_fkey")
+
+  @@index([rolesUserId], map: "FK_2a4cd29d2da4aea6ab0df0696ee")
+  @@index([created_at], map: "IDX_d091f1d36f18bbece2a9eabc6e")
+  @@index([ekspedisi_id], map: "user_ekspedisi_id_fkey")
+  @@index([membership_id], map: "user_membership_fkey")
+  @@index([email])
+  @@index([uuid])
+}
+
+model user_verifikasi {
+  id                Int       @id @default(autoincrement())
+  created_by        String?   @db.VarChar(255)
+  updated_by        String?   @db.VarChar(255)
+  deleted_by        String?   @db.VarChar(255)
+  created_at        DateTime  @default(now()) @db.Timestamp(6)
+  updated_at        DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at        DateTime? @db.Timestamp(6)
+  user_id           Int
+  verification_code Int
+  expired_time      DateTime  @db.Timestamp(0)
+  count_resend      Int
+  uuid              String    @db.VarChar(36)
+
+  @@index([created_at], map: "IDX_f0f62f28553360a9c00c8fc8f0")
+}
+
+model variant {
+  id         Int       @id @default(autoincrement())
+  created_by String?   @db.VarChar(255)
+  updated_by String?   @db.VarChar(255)
+  deleted_by String?   @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+  name       String    @db.VarChar(255)
+  uuid       String    @db.VarChar(36)
+
+  @@index([created_at], map: "IDX_40a0fae55b20505db1a903e013")
+}
+
+model variant_product {
+  id         Int       @id @default(autoincrement())
+  created_by String?   @db.VarChar(255)
+  updated_by String?   @db.VarChar(255)
+  deleted_by String?   @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+  name       String    @db.VarChar(255)
+  uuid       String    @db.VarChar(36)
+
+  @@index([created_at], map: "IDX_0817efdb646d854c6a26f0f2ec")
+}
+
+model village {
+  id         Int    @id @default(autoincrement())
+  wilayah_id Int?
+  name       String @db.VarChar(255)
+}
+
+model wilayah {
+  id                Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid              String    @unique(map: "wilayah_uuid_unique") @db.Char(36)
+  name              String?   @db.VarChar(255)
+  kode_wilayah      String?   @db.VarChar(255)
+  kabupaten_kota_id Int?
+  kabupaten_kota    String    @db.VarChar(255)
+  dati2             String?   @db.VarChar(255)
+  kode_pos          String?   @db.VarChar(255)
+  created_at        DateTime? @default(now()) @db.Timestamp(0)
+  created_by        String    @db.VarChar(255)
+  updated_at        DateTime? @default(now()) @db.Timestamp(0)
+  updated_by        String    @db.VarChar(255)
+}
+
+model audit_trail {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  action      String?   @db.VarChar(255)
+  module      String?   @db.VarChar(255)
+  key_id      String?   @db.VarChar(255)
+  logs        String?   @db.Text
+  payload     String?   @db.Text
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  status_code Int
+}
+
+model m_bank_list {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid       String    @unique(map: "m_bank_list_uuid_unique") @db.Char(36)
+  bank_code  String?   @db.VarChar(255)
+  bank_name  String?   @db.VarChar(255)
+  bi_fast    Boolean?
+  logo_url   String?   @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  created_by String    @db.VarChar(255)
+  updated_at DateTime? @db.Timestamp(0)
+  updated_by String?   @db.VarChar(255)
+  deleted_at DateTime? @db.Timestamp(0)
+  deleted_by String?   @db.VarChar(255)
+}
+
+model m_tipe_transaksi {
+  id              Int           @id @default(autoincrement()) @db.UnsignedInt
+  uuid            String        @unique(map: "m_jenis_transaksi_uuid_unique") @db.Char(36)
+  nama_transaksi  String?       @db.VarChar(255)
+  jenis_transaksi String?       @db.VarChar(255)
+  label           String?       @db.VarChar(50)
+  created_by      String        @db.VarChar(255)
+  created_at      DateTime?     @default(now()) @db.Timestamp(0)
+  updated_by      String?       @db.VarChar(255)
+  updated_at      DateTime?     @db.Timestamp(0)
+  deleted_by      String?       @db.VarChar(255)
+  deleted_at      DateTime?     @db.Timestamp(0)
+  t_transaksi     t_transaksi[]
+}
+
+model pin {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid       String    @unique(map: "pin_uuid_unique") @db.Char(36)
+  user_id    Int?
+  status     Int?
+  code       Int?
+  token      String?   @db.VarChar(255)
+  created_by String    @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_by String?   @db.VarChar(255)
+  updated_at DateTime? @db.Timestamp(0)
+  deleted_by String?   @db.VarChar(255)
+  deleted_at DateTime? @db.Timestamp(0)
+  otp        Int?
+  counter    Int?      @default(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model t_transaksi {
+  id                Int               @id @default(autoincrement())
+  uuid              String            @unique(map: "t_transaksi_uuid_unique") @db.Char(36)
+  user_id           Int
+  tipe_transaksi_id Int?              @db.UnsignedInt
+  jenis_transaksi   String?           @db.VarChar(255)
+  referensi         String?           @db.VarChar(255)
+  module            String?           @db.VarChar(255)
+  key_id            String?           @db.VarChar(255)
+  nominal           Float?
+  saldo             Float?
+  status            String?           @db.VarChar(255)
+  created_at        DateTime?         @default(now()) @db.Timestamp(0)
+  created_by        String            @db.VarChar(255)
+  updated_at        DateTime          @default(now()) @db.Timestamp(0)
+  updated_by        String?           @db.VarChar(255)
+  deleted_at        DateTime?         @db.Timestamp(0)
+  deleted_by        String?           @db.VarChar(255)
+  m_tipe_transaksi  m_tipe_transaksi? @relation(fields: [tipe_transaksi_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([tipe_transaksi_id], map: "t_transaksi_tipe_transaksi_id_fkey")
+  @@index([module, key_id], map: "transaksi_module_key_idx")
+}
+
+model t_batch_validation {
+  id                        Int                         @id @default(autoincrement())
+  uuid                      String                      @unique(map: "t_batch_validation_uuid_unique") @db.Char(36)
+  ekspedisi_id              Int
+  status_batch              Int?
+  nominal_transfer          Float?
+  jumlah_resi               Int?
+  created_at                DateTime?                   @default(now()) @db.Timestamp(0)
+  created_by                String                      @db.VarChar(255)
+  updated_at                DateTime?                   @default(now()) @db.Timestamp(0)
+  updated_by                String?                     @db.VarChar(255)
+  deleted_at                DateTime?                   @db.Timestamp(0)
+  deleted_by                String?                     @db.VarChar(255)
+  ekspedisi                 m_ekspedisi                 @relation(fields: [ekspedisi_id], references: [id])
+  t_batch_validation_bukti  t_batch_validation_bukti[]
+  t_batch_validation_upload t_batch_validation_upload[]
+  t_validation_klaim        t_validation_klaim[]
+
+  @@index([ekspedisi_id], map: "t_batch_validation_ekspedisi_id_fkey")
+}
+
+model t_batch_validation_bukti {
+  id                  Int                @id @default(autoincrement())
+  uuid                String             @unique(map: "t_batch_validation_bukti_uuid_unique") @db.Char(36)
+  batch_validation_id Int
+  url                 String?
+  status              Int?
+  created_at          DateTime?          @default(now()) @db.Timestamp(0)
+  created_by          String             @db.VarChar(255)
+  updated_at          DateTime?          @default(now()) @db.Timestamp(0)
+  updated_by          String?            @db.VarChar(255)
+  deleted_at          DateTime?          @db.Timestamp(0)
+  deleted_by          String?            @db.VarChar(255)
+  nominal             Int?               @default(0)
+  batch_validation    t_batch_validation @relation(fields: [batch_validation_id], references: [id])
+
+  @@index([batch_validation_id], map: "t_batch_validation_bukti_batch_validation_id_fkey")
+}
+
+model t_batch_validation_upload {
+  id                     Int                  @id @default(autoincrement())
+  uuid                   String               @unique(map: "t_batch_validation_bukti_uuid_unique") @db.Char(36)
+  batch_validation_id    Int
+  url                    String?
+  file_path              String?
+  created_at             DateTime?            @default(now()) @db.Timestamp(0)
+  created_by             String               @db.VarChar(255)
+  updated_at             DateTime?            @default(now()) @db.Timestamp(0)
+  updated_by             String?              @db.VarChar(255)
+  deleted_at             DateTime?            @db.Timestamp(0)
+  deleted_by             String?              @db.VarChar(255)
+  batch_validation       t_batch_validation   @relation(fields: [batch_validation_id], references: [id])
+  batch_validation_klaim t_validation_klaim[]
+
+  @@index([batch_validation_id], map: "t_batch_validation_upload_batch_validation_id_fkey")
+}
+
+model t_validation_klaim {
+  id                         Int                       @id @default(autoincrement())
+  uuid                       String                    @unique(map: "t_batch_validation_bukti_uuid_unique") @db.Char(36)
+  batch_validation_id        Int
+  batch_validation_upload_id Int
+  nominal_order              Float?
+  nominal_ekspedisi          Float?
+  created_at                 DateTime?                 @default(now()) @db.Timestamp(0)
+  created_by                 String                    @db.VarChar(255)
+  updated_at                 DateTime?                 @default(now()) @db.Timestamp(0)
+  updated_by                 String?                   @db.VarChar(255)
+  deleted_at                 DateTime?                 @db.Timestamp(0)
+  deleted_by                 String?                   @db.VarChar(255)
+  status                     Int?
+  order_id                   Int?
+  order                      order?                    @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_validation_klaim_order")
+  batch_validation           t_batch_validation        @relation(fields: [batch_validation_id], references: [id])
+  batch_validation_upload    t_batch_validation_upload @relation(fields: [batch_validation_upload_id], references: [id])
+
+  @@index([order_id], map: "fk_validation_klaim_order")
+  @@index([batch_validation_id], map: "t_validation_klaim_batch_validation_id_fkey")
+  @@index([batch_validation_upload_id], map: "t_validation_klaim_batch_validation_upload_id_fkey")
+}
+
+model m_kategori_klaim {
+  id         Int        @id @default(autoincrement())
+  uuid       String     @unique(map: "m_kategori_klaim_uuid_unique") @db.Char(36)
+  created_at DateTime?  @default(now()) @db.Timestamp(0)
+  created_by String     @db.VarChar(255)
+  updated_at DateTime   @default(now()) @db.Timestamp(6)
+  updated_by String?    @db.VarChar(255)
+  deleted_at DateTime?  @db.Timestamp(6)
+  deleted_by String?    @db.VarChar(255)
+  nama       String
+  deskripsi  String     @db.LongText
+  code       String?
+  tipe_klaim tipe_klaim @default(HARGA)
+  t_klaim    t_klaim[]
+}
+
+model t_klaim {
+  id                 Int              @id @default(autoincrement())
+  uuid               String           @unique(map: "t_klaim_uuid_unique") @db.Char(36)
+  created_at         DateTime?        @default(now()) @db.Timestamp(0)
+  created_by         String           @db.VarChar(255)
+  updated_at         DateTime         @default(now()) @db.Timestamp(6)
+  updated_by         String?          @db.VarChar(255)
+  deleted_at         DateTime?        @db.Timestamp(6)
+  deleted_by         String?          @db.VarChar(255)
+  user_id            Int
+  order_id           Int
+  kategori_klaim_id  Int
+  status_klaim_id    Int
+  tiket_id           Int?
+  deskripsi          String           @db.LongText
+  cair               Float?           @default(0)
+  est_cair           Float?           @default(0)
+  code               String?
+  tindakan_ekspedisi String?
+  order              order            @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_klaim_order_id")
+  m_kategori_klaim   m_kategori_klaim @relation(fields: [kategori_klaim_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  m_status_klaim     m_status_klaim   @relation(fields: [status_klaim_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user               user             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([created_at])
+  @@index([id])
+  @@index([kategori_klaim_id], map: "t_klaim_kategori_klaim_id_fkey")
+  @@index([status_klaim_id], map: "t_klaim_status_klaim_id_fkey")
+  @@index([order_id], map: "t_klaim_order_id_fkey")
+  @@index([user_id], map: "t_klaim_user_id_fkey")
+}
+
+model m_status_klaim {
+  id         Int       @id @default(autoincrement())
+  uuid       String    @unique(map: "m_status_klaim_uuid_unique") @db.Char(36)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  created_by String    @db.VarChar(255)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_by String?   @db.VarChar(255)
+  deleted_at DateTime? @db.Timestamp(6)
+  deleted_by String?   @db.VarChar(255)
+  nama       String
+  deskripsi  String    @db.LongText
+  t_klaim    t_klaim[]
+}
+
+model batch_tier_layanan {
+  id                   Int                            @id @default(autoincrement())
+  uuid                 String                         @unique(map: "uuid_batch_tier_layanan") @db.VarChar(36)
+  batch_id             Int?
+  metode_pembayaran_id Int?
+  membership_id        Int?
+  ekspedisi_id         Int?
+  layanan_id           Int?
+  biaya                Float?                         @default(0) @db.Float
+  biaya_min            Float?                         @default(0) @db.Float
+  biaya_max            Float?                         @default(0) @db.Float
+  biaya_pajak          Float?                         @default(0) @db.Float
+  ongkos_kirim_diskon  Float?                         @default(0) @db.Float
+  ongkos_kirim_pajak   Float?                         @default(0) @db.Float
+  rts_ongkir           Float?                         @default(0) @db.Float
+  rts_cashback         Float?                         @default(0) @db.Float
+  tipe_schema          batch_tier_layanan_tipe_schema @default(CLIENT)
+  created_by           String?                        @db.VarChar(255)
+  updated_by           String?                        @db.VarChar(255)
+  deleted_by           String?                        @db.VarChar(255)
+  created_at           DateTime                       @default(now()) @db.Timestamp(6)
+  updated_at           DateTime                       @default(now()) @db.Timestamp(6)
+  deleted_at           DateTime?                      @db.Timestamp(6)
+  m_metode_pembayaran  m_metode_pembayaran?           @relation(fields: [metode_pembayaran_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "batch_tier_layanan_ibfk_1")
+  m_membership         m_membership?                  @relation(fields: [membership_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "batch_tier_layanan_ibfk_2")
+  m_ekspedisi          m_ekspedisi?                   @relation(fields: [ekspedisi_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "batch_tier_layanan_ibfk_3")
+  layanan_ekspedisi    layanan_ekspedisi?             @relation(fields: [layanan_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "batch_tier_layanan_ibfk_4")
+  batch                batch?                         @relation(fields: [batch_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "batch_tier_layanan_ibfk_5")
+
+  @@index([batch_id], map: "batch_id")
+  @@index([ekspedisi_id], map: "ekspedisi_id")
+  @@index([layanan_id], map: "layanan_id")
+  @@index([membership_id], map: "membership_id")
+  @@index([metode_pembayaran_id], map: "metode_pembayaran_id")
+}
+
+model m_ekspedisi_assuransi {
+  id               Int          @id @default(autoincrement())
+  uuid             String       @unique(map: "m_ekspedisi_asuransi") @db.VarChar(36)
+  ekspedisi_id     Int?
+  kondisi          String?      @db.VarChar(5)
+  harga_barang     Int?         @default(0)
+  type_perhitungan String?      @db.VarChar(5)
+  biaya_nominal    Float?       @default(0) @db.Float
+  created_by       String?      @db.VarChar(255)
+  updated_by       String?      @db.VarChar(255)
+  deleted_by       String?      @db.VarChar(255)
+  created_at       DateTime     @default(now()) @db.Timestamp(6)
+  updated_at       DateTime     @default(now()) @db.Timestamp(6)
+  deleted_at       DateTime?    @db.Timestamp(6)
+  biaya_admin      Float?       @default(0) @db.Float
+  m_ekspedisi      m_ekspedisi? @relation(fields: [ekspedisi_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "m_ekspedisi_assuransi_ibfk_3")
+
+  @@index([ekspedisi_id], map: "ekspedisi_id")
+}
+
+model m_ekspedisi_kendaraan {
+  id           Int       @id @default(autoincrement()) @db.UnsignedInt
+  ekspedisi_id Int
+  kendaraan_id Int
+  created_by   String?   @db.VarChar(255)
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_by   String?   @db.VarChar(255)
+  updated_at   DateTime? @db.Timestamp(0)
+  deleted_at   DateTime? @db.Timestamp(0)
+  deleted_by   String?   @db.VarChar(255)
+}
+
+model m_jenis_transaksi {
+  id              Int       @id @default(autoincrement())
+  uuid            String    @unique(map: "m_jenis_transaksi_uuid_unique") @db.Char(36)
+  nama_transaksi  String?   @db.VarChar(255)
+  jenis_transaksi String?   @db.VarChar(255)
+  created_by      String    @db.VarChar(255)
+  created_at      DateTime? @default(now()) @db.Timestamp(0)
+  updated_by      String?   @db.VarChar(255)
+  updated_at      DateTime? @db.Timestamp(0)
+  deleted_by      String?   @db.VarChar(255)
+  deleted_at      DateTime? @db.Timestamp(0)
+}
+
+model m_kategori_tiket {
+  id         Int       @id @default(autoincrement())
+  uuid       String    @unique(map: "m_kategori_tiket_uuid_unique") @db.Char(36)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  created_by String    @db.VarChar(255)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_by String?   @db.VarChar(255)
+  deleted_at DateTime? @db.Timestamp(6)
+  deleted_by String?   @db.VarChar(255)
+  tujuan     String
+  nama       String
+  deskripsi  String    @db.LongText
+  t_tiket    t_tiket[]
+}
+
+model m_membership {
+  id                 Int                  @id @default(autoincrement())
+  uuid               String               @unique(map: "m_membership_uuid_unique") @db.Char(36)
+  name               String?              @db.VarChar(255)
+  icon_url           String?              @db.VarChar(255)
+  pengiriman_min     Int                  @default(0)
+  kondisi            Int?
+  durasi             Int                  @default(0)
+  created_by         String               @db.VarChar(255)
+  created_at         DateTime?            @default(now()) @db.Timestamp(0)
+  updated_by         String?              @db.VarChar(255)
+  updated_at         DateTime?            @db.Timestamp(0)
+  deleted_by         String?              @db.VarChar(255)
+  deleted_at         DateTime?            @db.Timestamp(0)
+  benefit            String?              @db.LongText
+  batch_tier_layanan batch_tier_layanan[]
+  m_tier_layanan     m_tier_layanan[]
+  user               user[]
+}
+
+model m_riwayat_order {
+  id         Int       @id @default(autoincrement())
+  tanggal    DateTime? @db.Date
+  nomor_hp   String?   @db.VarChar(45)
+  kode_pos   String?   @db.VarChar(45)
+  ekspedisi  String?   @db.VarChar(45)
+  status     String?   @db.VarChar(45)
+  nomor_resi String?   @db.VarChar(45)
+  store      String?   @db.VarChar(45)
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+
+  @@index([ekspedisi, status, kode_pos])
+  @@index([status, nomor_hp])
+}
+
+model m_skema_perhitungan {
+  id                   Int                 @id @default(autoincrement()) @db.UnsignedInt
+  uuid                 String              @unique(map: "m_skema_perhitungan_uuid_unique") @db.Char(36)
+  metode_pembayaran_id Int
+  ekspedisi_id         Int
+  layanan_id           Int
+  biaya                Float?              @db.Float
+  biaya_min            Float?              @db.Float
+  biaya_max            Float?              @db.Float
+  biaya_pajak          Float?              @db.Float
+  ongkos_kirim_diskon  Float?              @db.Float
+  ongkos_kirim_pajak   Float?              @db.Float
+  rts_ongkir           Float?              @db.Float
+  rts_cashback         Float?              @db.Float
+  tipe_skema           String              @db.VarChar(255)
+  created_by           String?             @db.VarChar(255)
+  created_at           DateTime?           @default(now()) @db.Timestamp(0)
+  updated_by           String?             @db.VarChar(255)
+  updated_at           DateTime?           @db.Timestamp(0)
+  deleted_at           DateTime?           @db.Timestamp(0)
+  deleted_by           String?             @db.VarChar(255)
+  m_ekspedisi          m_ekspedisi         @relation(fields: [ekspedisi_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  layanan_ekspedisi    layanan_ekspedisi   @relation(fields: [layanan_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  m_metode_pembayaran  m_metode_pembayaran @relation(fields: [metode_pembayaran_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([ekspedisi_id], map: "ekspedisi_id")
+  @@index([layanan_id], map: "layanan_id")
+  @@index([metode_pembayaran_id], map: "metode_pembayaran_id")
+}
+
+model m_status_tiket {
+  id         Int       @id @default(autoincrement())
+  uuid       String    @unique(map: "m_status_tiket_uuid_unique") @db.Char(36)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  created_by String    @db.VarChar(255)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_by String?   @db.VarChar(255)
+  deleted_at DateTime? @db.Timestamp(6)
+  deleted_by String?   @db.VarChar(255)
+  nama       String
+  deskripsi  String    @db.LongText
+  icon       String?   @db.VarChar(255)
+  t_tiket    t_tiket[]
+}
+
+model m_tier_layanan {
+  id                   Int                        @id @default(autoincrement())
+  uuid                 String                     @unique(map: "uuid_m_tier_layanan") @db.VarChar(36)
+  metode_pembayaran_id Int?
+  membership_id        Int?
+  ekspedisi_id         Int?
+  layanan_id           Int?
+  biaya                Float?                     @default(0) @db.Float
+  biaya_min            Float?                     @default(0) @db.Float
+  biaya_max            Float?                     @default(0) @db.Float
+  biaya_pajak          Float?                     @default(0) @db.Float
+  ongkos_kirim_diskon  Float?                     @default(0) @db.Float
+  ongkos_kirim_pajak   Float?                     @default(0) @db.Float
+  rts_ongkir           Float?                     @default(0) @db.Float
+  rts_cashback         Float?                     @default(0) @db.Float
+  tipe_schema          m_tier_layanan_tipe_schema @default(CLIENT)
+  created_by           String?                    @db.VarChar(255)
+  updated_by           String?                    @db.VarChar(255)
+  deleted_by           String?                    @db.VarChar(255)
+  created_at           DateTime                   @default(now()) @db.Timestamp(6)
+  updated_at           DateTime                   @default(now()) @db.Timestamp(6)
+  deleted_at           DateTime?                  @db.Timestamp(6)
+  benefits             String?                    @db.Text
+  m_metode_pembayaran  m_metode_pembayaran?       @relation(fields: [metode_pembayaran_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "m_tier_layanan_ibfk_1")
+  m_membership         m_membership?              @relation(fields: [membership_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "m_tier_layanan_ibfk_2")
+  m_ekspedisi          m_ekspedisi?               @relation(fields: [ekspedisi_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "m_tier_layanan_ibfk_3")
+  layanan_ekspedisi    layanan_ekspedisi?         @relation(fields: [layanan_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "m_tier_layanan_ibfk_4")
+
+  @@index([ekspedisi_id], map: "ekspedisi_id")
+  @@index([layanan_id], map: "layanan_id")
+  @@index([membership_id], map: "membership_id")
+  @@index([metode_pembayaran_id], map: "metode_pembayaran_id")
+}
+
+model t_pesan {
+  id         Int       @id @default(autoincrement())
+  uuid       String    @unique(map: "t_pesan_uuid_unique") @db.Char(36)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  created_by String    @db.VarChar(255)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_by String?   @db.VarChar(255)
+  deleted_at DateTime? @db.Timestamp(6)
+  deleted_by String?   @db.VarChar(255)
+  user_id    Int
+  modules    String
+  key_id     Int
+  messages   String    @db.LongText
+  media      String
+  tipe_pesan String
+
+  @@index([modules, key_id])
+}
+
+model t_saldo {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid       String    @unique(map: "t_saldo_uuid_unique") @db.Char(36)
+  user_id    Int
+  saldo      Float?
+  created_by String    @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_by String?   @db.VarChar(255)
+  updated_at DateTime? @db.Timestamp(0)
+  deleted_by String?   @db.VarChar(255)
+  deleted_at DateTime? @db.Timestamp(0)
+  user       user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "saldo_user_fkey")
+
+  @@index([user_id], map: "saldo_user_fkey")
+}
+
+model t_tiket {
+  id                Int              @id @default(autoincrement())
+  uuid              String           @unique(map: "t_tiket_uuid_unique") @db.Char(36)
+  created_at        DateTime?        @default(now()) @db.Timestamp(0)
+  created_by        String           @db.VarChar(255)
+  updated_at        DateTime         @default(now()) @db.Timestamp(6)
+  updated_by        String?          @db.VarChar(255)
+  deleted_at        DateTime?        @db.Timestamp(6)
+  deleted_by        String?          @db.VarChar(255)
+  user_id           Int
+  order_id          Int?
+  tujuan            String
+  kategori_tiket_id Int
+  status_tiket_id   Int
+  deskripsi         String           @db.LongText
+  handle_by         Int?
+  priority          String?          @db.VarChar(200)
+  order             order?           @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tiket_order_id")
+  m_kategori_tiket  m_kategori_tiket @relation(fields: [kategori_tiket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  m_status_tiket    m_status_tiket   @relation(fields: [status_tiket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user              user             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([created_at])
+  @@index([id])
+  @@index([kategori_tiket_id], map: "t_tiket_kategori_tiket_id_fkey")
+  @@index([order_id], map: "t_tiket_order_id_fkey")
+  @@index([status_tiket_id], map: "t_tiket_status_tiket_id_fkey")
+  @@index([user_id], map: "t_tiket_user_id_fkey")
+}
+
+model order_recommendation {
+  id                     Int         @id @default(autoincrement())
+  uuid                   String      @unique(map: "order_recommendation_uuid_unique") @db.Char(36)
+  created_at             DateTime?   @default(now()) @db.Timestamp(0)
+  created_by             String      @db.VarChar(255)
+  updated_at             DateTime?   @default(now()) @db.Timestamp(0)
+  updated_by             String?     @db.VarChar(255)
+  deleted_at             DateTime?   @db.Timestamp(0)
+  deleted_by             String?     @db.VarChar(255)
+  order_id               Int         @unique
+  ekspedisi_id           Int
+  ekspedisi_code         String      @db.VarChar(255)
+  ekspedisi_logo         String      @db.VarChar(255)
+  ekspedisi_name         String      @db.VarChar(255)
+  price                  Float?      @default(0)
+  ekspedisi_service_name String?     @default("")
+  score                  Int?        @default(0)
+  m_ekspedisi            m_ekspedisi @relation(fields: [ekspedisi_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  order                  order       @relation(fields: [order_id], references: [id])
+
+  @@index([ekspedisi_id], map: "order_recommendation_ekspedisi_id_fkey")
+}
+
+model m_idexpress_locations {
+  id                 Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid               String?   @db.Char(36)
+  no                 Int?
+  province_id        Int?
+  province_name      String?   @db.VarChar(255)
+  city_id            Int?
+  city_name          String?   @db.VarChar(255)
+  district_id        Int?
+  district_name      String?   @db.VarChar(255)
+  zipcode            String?   @db.VarChar(100)
+  created_at         DateTime? @default(now()) @db.Timestamp(0)
+  created_by         String?   @db.VarChar(255)
+  updated_at         DateTime?
+  updated_by         String?   @db.VarChar(255)
+  cod_coverage       Boolean   @default(false)
+  cod_coverage_lite  Boolean   @default(false)
+  cod_coverage_cargo Boolean   @default(false)
+  wilayah_id         Int?      @db.UnsignedInt
+
+  @@index([zipcode], map: "zipcode_idx")
+  @@index([wilayah_id], map: "wilayah_id_idx")
+}
+
+model m_jne_locations {
+  id               Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid             String    @unique(map: "m_jne_location_uuid_unique") @db.Char(36)
+  origin_code      String?   @db.VarChar(100)
+  tariff_code      String?   @db.VarChar(100)
+  country_name     String?   @db.VarChar(255)
+  province_name    String?   @db.VarChar(255)
+  city_name        String?   @db.VarChar(255)
+  district_name    String?   @db.VarChar(255)
+  subdistrict_name String?   @db.VarChar(255)
+  zipcode          String?   @db.VarChar(100)
+  created_at       DateTime? @default(now()) @db.Timestamp(0)
+  created_by       String?   @db.VarChar(255)
+  updated_at       DateTime?
+  updated_by       String?   @db.VarChar(255)
+
+  @@index([zipcode], map: "zipcode_idx")
+}
+
+model m_jne_listorigin {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid        String?   @db.Char(36)
+  origin_code String?   @db.VarChar(100)
+  origin_name String?   @db.VarChar(255)
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  created_by  String?   @db.VarChar(255)
+  updated_at  DateTime?
+  updated_by  String?   @db.VarChar(255)
+}
+
+model t_order_tlc {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id   Int       @unique
+  code       String    @db.VarChar(100)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  order      order     @relation(fields: [order_id], references: [id])
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model t_report_histories {
+  id             BigInt                            @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id        BigInt                            @db.UnsignedBigInt
+  reference_code String                            @db.VarChar(100)
+  reference_type t_report_histories_reference_type @default(daily)
+  sequence       String                            @db.VarChar(10)
+  total          Decimal                           @db.Decimal(10, 2)
+  created_at     DateTime                          @default(now()) @db.DateTime(0)
+  updated_at     DateTime                          @default(now()) @db.DateTime(0)
+
+  @@unique([reference_type, reference_code, user_id], map: "type_reference_user_idx")
+}
+
+model t_report_summary {
+  id             BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id        BigInt   @db.UnsignedBigInt
+  reference_code String   @db.VarChar(100)
+  total          Decimal  @db.Decimal(10, 2)
+  created_at     DateTime @default(now()) @db.DateTime(0)
+  updated_at     DateTime @default(now()) @db.DateTime(0)
+
+  @@unique([reference_code, user_id], map: "reference_user_idx")
+}
+
+model m_settings {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  uuid       String    @unique @db.VarChar(36)
+  created_by String?   @db.VarChar(255)
+  updated_by String?   @db.VarChar(255)
+  deleted_by String?   @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+  keys       String    @unique(map: "m_settings_unique") @db.VarChar(255)
+  values     String    @db.VarChar(255)
+}
+
+model m_mapping_reasons {
+  id             BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
+  m_reason_code  String?    @db.VarChar(10)
+  ekspedisi_code String     @db.VarChar(50)
+  failure_reason String     @db.VarChar(255)
+  created_at     DateTime   @default(now()) @db.Timestamp(6)
+  updated_at     DateTime   @default(now()) @db.Timestamp(6)
+  reason         m_reasons? @relation(fields: [m_reason_code], references: [code], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([ekspedisi_code, failure_reason])
+  @@index([m_reason_code], map: "m_mapping_reasons_m_reason_code_fkey")
+}
+
+model m_reasons {
+  id                Int                 @id @default(autoincrement()) @db.UnsignedInt
+  code              String              @unique @db.VarChar(10)
+  name              String              @db.VarChar(100)
+  m_mapping_reasons m_mapping_reasons[]
+  t_failure_reasons t_failure_reasons[]
+}
+
+model m_sequence {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  created_by String?   @db.VarChar(255)
+  updated_by String?   @db.VarChar(255)
+  deleted_by String?   @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime  @default(now()) @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+  module     String?   @db.VarChar(150)
+  prefix     String    @unique @db.VarChar(255)
+  values     BigInt    @default(1) @db.UnsignedBigInt
+}
+
+model t_failure_reasons {
+  id          BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id    Int
+  m_reason_id Int?       @db.UnsignedInt
+  message     String     @db.VarChar(255)
+  created_at  DateTime   @default(now()) @db.Timestamp(6)
+  updated_at  DateTime   @default(now()) @db.Timestamp(6)
+  m_reasons   m_reasons? @relation(fields: [m_reason_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  order       order      @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([m_reason_id], map: "t_failure_reasons_m_reason_id_fkey")
+  @@index([order_id], map: "t_failure_reasons_order_id_fkey")
+}
+
+model m_flat_rates {
+  id                BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid              String   @unique(map: "m_flat_rates_uuid_idx") @db.Char(36)
+  origin_name       String?  @db.VarChar(100)
+  destination_name  String?  @db.VarChar(100)
+  is_active         Boolean  @default(false)
+  rate_type         String   @db.VarChar(20)
+  amount            Int      @db.UnsignedInt
+  ekspedisi_code    String   @db.VarChar(50)
+  ekspedisi_service String   @db.VarChar(100)
+  start_at          DateTime @db.Timestamp(6)
+  end_at            DateTime @db.Timestamp(6)
+  priority_number   Int?     @db.Int
+  created_by        String?  @db.VarChar(255)
+  updated_by        String?  @db.VarChar(255)
+  created_at        DateTime @default(now()) @db.Timestamp(6)
+  updated_at        DateTime @updatedAt @db.Timestamp(6)
+  region_flat_rates region_flat_rates[]
+
+  @@index([ekspedisi_code, is_active, ekspedisi_service])
+  @@index([start_at, end_at])
+  @@index([priority_number])
+}
+
+model region_flat_rates {
+  id             BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  m_flat_rate_id BigInt       @db.UnsignedBigInt
+  location_type  String       @db.VarChar(100) // value: origin, destination
+  region_type    String       @db.VarChar(100) // value: province, city, district
+  kode_wilayah   String       @db.VarChar(15)
+  flat_rate      m_flat_rates @relation(fields: [m_flat_rate_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([location_type, region_type])
+  @@index([kode_wilayah])
+}
+
+model t_download_history {
+  id            BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  first_date    DateTime @db.Date
+  end_date      DateTime @db.Date
+  ekspedisi     String?  @db.VarChar(255)
+  seller        String?  @db.VarChar(255)
+  download_link String   @db.Text
+  created_at    DateTime @default(now()) @db.Timestamp(6)
+  created_by    String?  @db.VarChar(100)
+}
+
+model t_order_temporary {
+  id                BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  batch_id          Int
+  order_id          Int?
+  number_hp         String   @db.VarChar(16)
+  customer_name     String   @db.VarChar(150)
+  address           String   @db.Text
+  district          String   @db.VarChar(100)
+  postal_code       String   @db.VarChar(10)
+  metode_pembayaran String   @db.VarChar(100)
+  cod_tarif         Int?
+  goods_tarif       Int?
+  package_content   String?  @db.Text
+  weight            Int
+  quantity          Int
+  delivery_note     String?  @db.Text
+  remark_1          String?  @db.Text
+  remark_2          String?  @db.Text
+  remark_3          String?  @db.Text
+  created_at        DateTime @default(now()) @db.Timestamp(6)
+  updated_at        DateTime @default(now()) @db.Timestamp(6)
+  created_by        String   @db.VarChar(255)
+  updated_by        String?  @db.VarChar(255)
+  batch             batch    @relation(fields: [batch_id], references: [id])
+  order             order?   @relation(fields: [order_id], references: [id])
+
+  @@index([batch_id], map: "t_order_temporary_batch_id_fkey")
+  @@index([order_id], map: "t_order_temporary_order_id_fkey")
+}
+
+enum batch_type_pickup {
+  PICKUP
+  DROP
+}
+
+enum batch_status {
+  DRAFT
+  PROCESS
+  PICKUP
+  COMPLETED
+  PENDING
+}
+
+enum tipe_klaim {
+  HARGA
+  ONGKOS
+}
+
+enum m_tier_layanan_tipe_schema {
+  CLIENT
+  COMPLETED
+}
+
+enum batch_tier_layanan_tipe_schema {
+  CLIENT
+  COMPLETED
+}
+
+enum t_report_histories_reference_type {
+  daily
+  monthly
+}
